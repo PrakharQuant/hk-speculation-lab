@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HK Speculation Lab — Harrison–Kreps Model</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoNkbvHZANL3fQdNE/3h6F5f/1bF" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
+  <!-- Plotly -->
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <!-- Lucide icons (optional, fallback to text) -->
+  <script src="https://unpkg.com/lucide@0.454.0/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+  <header>
+    <div class="header-top">
+      <div class="brand">
+        <h1>HK SPECULATION LAB</h1>
+        <p class="subtitle">Heterogeneous Beliefs. Resale Options. Speculative Asset Pricing.</p>
+        <span class="status-badge">Analytical Equilibrium Model</span>
+      </div>
+      <div class="credit">
+        <strong>Prakhar Gupta</strong><br>
+        <a href="mailto:bestofprakhar@gmail.com">bestofprakhar@gmail.com</a>
+        <span class="social-links">
+          <a href="https://www.linkedin.com/in/prakhar-gupta-5b7250372/" target="_blank" rel="noopener" title="LinkedIn" aria-label="LinkedIn">
+            <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          </a>
+          <a href="https://x.com/PrakharQuant" target="_blank" rel="noopener" title="X / Twitter" aria-label="X">
+            <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+        </span>
+      </div>
+    </div>
+    <nav id="main-nav">
+      <button data-section="overview" class="active">Overview</button>
+      <button data-section="explorer">Model Explorer</button>
+      <button data-section="beliefs">Belief Dynamics</button>
+      <button data-section="price">Price & Fundamentals</button>
+      <button data-section="sensitivity">Sensitivity Lab</button>
+      <button data-section="returns">Expected Returns</button>
+      <button data-section="bubbles">Bubble Comparison</button>
+      <button data-section="notes">Research Notes</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Overview -->
+    <section id="overview" class="section active">
+      <div class="panel">
+        <h2>Executive Overview</h2>
+        <div class="grid-4" id="overview-metrics"></div>
+        <div class="note" id="overview-interpretation" style="margin-top:1rem;"></div>
+      </div>
+      <div class="panel">
+        <h3>Key Relationships</h3>
+        <p>Equilibrium price \( p = \dfrac{\delta \varphi}{1-\delta} \) (identical across states in this symmetric specification).</p>
+        <p>Fundamental values are belief-dependent discounted expected dividends. The speculative premium is the value of the resale option under short-sale constraints and heterogeneous beliefs.</p>
+      </div>
+    </section>
+
+    <!-- Model Explorer -->
+    <section id="explorer" class="section">
+      <div class="panel">
+        <h2>Interactive Model Explorer</h2>
+        <div class="controls" id="explorer-controls"></div>
+        <div style="margin-top:1rem;">
+          <button id="reset-btn" class="secondary">Reset to Defaults</button>
+          <label style="margin-left:1rem;"><input type="checkbox" id="pct-toggle"> Show percentage premiums</label>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <h3>Numerical Results</h3>
+          <div id="explorer-results"></div>
+        </div>
+        <div class="panel">
+          <h3>Price vs Fundamentals</h3>
+          <div id="explorer-chart" class="chart-container"></div>
+          <p class="caption">Market price compared with each investor's perceived fundamental value in the current state.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Belief Dynamics -->
+    <section id="beliefs" class="section">
+      <div class="panel">
+        <h2>Belief Dynamics</h2>
+        <p>Agent 1 expects states to persist. Agent 2 expects states to alternate. At \( \varphi = 1/2 \) their beliefs coincide.</p>
+        <div class="grid-2" id="belief-matrices"></div>
+      </div>
+      <div class="panel">
+        <h3>Expected Dividend Forecast</h3>
+        <div class="controls" id="forecast-controls"></div>
+        <div id="forecast-chart" class="chart-container" style="margin-top:1rem;"></div>
+      </div>
+    </section>
+
+    <!-- Price & Fundamentals -->
+    <section id="price" class="section">
+      <div class="panel">
+        <h2>Price and Fundamentals</h2>
+        <div id="price-chart" class="chart-container"></div>
+        <p class="caption">Fundamental value is model-dependent and not directly observable in markets.</p>
+      </div>
+      <div class="panel">
+        <h3>Speculative Premium by State and Investor</h3>
+        <div id="premium-chart" class="chart-container"></div>
+        <div id="price-table" style="margin-top:1rem;"></div>
+      </div>
+    </section>
+
+    <!-- Sensitivity Lab -->
+    <section id="sensitivity" class="section">
+      <div class="panel">
+        <h2>Sensitivity Lab</h2>
+        <div class="controls" id="sens-controls"></div>
+      </div>
+      <div class="panel">
+        <h3>Price vs Belief Disagreement (\( \varphi \))</h3>
+        <div id="sens-phi-chart" class="chart-container"></div>
+      </div>
+      <div class="panel">
+        <h3>Price vs Discount Factor (\( \delta \))</h3>
+        <div id="sens-delta-chart" class="chart-container"></div>
+      </div>
+      <div class="panel">
+        <h3>Heatmaps (\( \varphi \) × \( \delta \))</h3>
+        <div class="grid-2">
+          <div id="heatmap-price" class="chart-container"></div>
+          <div id="heatmap-premium" class="chart-container"></div>
+        </div>
+        <p class="note">\( \partial p / \partial \varphi = \delta/(1-\delta) > 0 \). \( \partial p / \partial \delta = \varphi/(1-\delta)^2 > 0 \).</p>
+      </div>
+    </section>
+
+    <!-- Expected Returns -->
+    <section id="returns" class="section">
+      <div class="panel">
+        <h2>State-Dependent Expected Returns</h2>
+        <div id="returns-chart" class="chart-container"></div>
+        <div id="returns-table" style="margin-top:1rem;"></div>
+        <p class="note">Each investor expects the risk-free gross return in the state where they are the marginal buyer. In the other state they expect a lower return (and do not hold the asset).</p>
+      </div>
+    </section>
+
+    <!-- Bubble Comparison -->
+    <section id="bubbles" class="section">
+      <div class="panel">
+        <h2>Bubble Comparison</h2>
+        <div class="grid-3">
+          <div>
+            <h3>A. Fundamental-Value Pricing</h3>
+            <p>Price equals the discounted expected dividends under the investor's own beliefs. No resale premium.</p>
+          </div>
+          <div>
+            <h3>B. Harrison–Kreps Speculative Pricing</h3>
+            <p>Price exceeds both investors' fundamental values because of the option to resell to a more optimistic investor when beliefs disagree and short sales are restricted.</p>
+          </div>
+          <div>
+            <h3>C. Rational Bubble (Illustrative)</h3>
+            <p>An additional component \( b_t \) satisfying \( b_t = \delta E[b_{t+1}] \) (no-arbitrage growth). Here we show a simple exploding example for contrast. Not part of the HK equilibrium.</p>
+          </div>
+        </div>
+        <div id="bubble-chart" class="chart-container" style="margin-top:1rem;"></div>
+        <p class="caption">A high price relative to fundamentals does not by itself prove a bubble exists in real markets.</p>
+      </div>
+    </section>
+
+    <!-- Research Notes -->
+    <section id="notes" class="section">
+      <div class="panel">
+        <h2>Mathematical Research Notes</h2>
+        <div class="math-block">
+          <p>States \( \{0,1\} \), dividends \( d = [0,1]^\top \).</p>
+          <p>Agent 1 transition: \( Q_1 = \begin{pmatrix} \varphi & 1-\varphi \\ 1-\varphi & \varphi \end{pmatrix} \)</p>
+          <p>Agent 2 transition: \( Q_2 = \begin{pmatrix} 1-\varphi & \varphi \\ \varphi & 1-\varphi \end{pmatrix} \)</p>
+          <p>Fundamental value: \( F^a = \delta Q_a (I - \delta Q_a)^{-1} d \)</p>
+          <p>Equilibrium: \( p = \delta \max_a E^a[d_{t+1} + p(d_{t+1}) \mid d_t] \)</p>
+          <p>Closed-form (symmetric case): \( p = \dfrac{\delta \varphi}{1-\delta} \)</p>
+        </div>
+        <h3>Glossary</h3>
+        <ul>
+          <li><strong>Heterogeneous beliefs</strong>: Agents disagree on transition probabilities.</li>
+          <li><strong>Fundamental value</strong>: Discounted expected dividends under an agent's own beliefs, ignoring resale.</li>
+          <li><strong>Speculative premium</strong>: \( p - F^a \). Value of the resale option.</li>
+          <li><strong>Marginal buyer</strong>: The agent who is most optimistic in the current state and sets the price.</li>
+          <li><strong>Short-selling</strong>: Restricted, so pessimists cannot force the price down to their valuation.</li>
+        </ul>
+        <h3>References</h3>
+        <p>Harrison, J. M., & Kreps, D. M. (1978). Speculative Investor Behavior in a Stock Market with Heterogeneous Expectations. <em>The Quarterly Journal of Economics</em>, 92(2), 323–336. doi:10.2307/1884166</p>
+        <p>Miller, E. M. (1977). Risk, Uncertainty, and Divergence of Opinion. <em>The Journal of Finance</em>, 32(4), 1151–1168. doi:10.1111/j.1540-6261.1977.tb03317.x</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Harrison & Kreps (1978) | Quantitative Finance Research Lab<br>
+    <a href="https://github.com/PrakharQuant/hk-speculation-lab" target="_blank" rel="noopener">Source code</a>
+    &nbsp;·&nbsp; Educational model only. Not investment advice.
+  </footer>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
